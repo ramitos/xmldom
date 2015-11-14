@@ -267,7 +267,7 @@ DOMParser.prototype.parseFromString = function(source, mimeType) {
   }
 
   return domBuilder.document;
-}
+};
 
 /*
  * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/LexicalHandler.html

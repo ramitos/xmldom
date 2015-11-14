@@ -1,114 +1,139 @@
-var wows = require('vows');
+var lab = require('lab').script();
 var assert = require('assert');
-var DOMParser = require('xmldom').DOMParser;
-var XMLSerializer = require('xmldom').XMLSerializer;
-var parser = new DOMParser();
-// Create a Test Suite
-wows.describe('XML Node Parse').addBatch({
-  'element': function() {
-    var dom = new DOMParser().parseFromString('<xml><child/></xml>');
-    console.assert(dom.childNodes.length == 1, dom.childNodes.length, 1);
-    console.assert(dom.documentElement.childNodes.length == 1);
-    console.assert(dom.documentElement.tagName == 'xml');
-    console.assert(dom.documentElement.firstChild.tagName == 'child');
-  },
-  'text': function() {
-    var dom = new DOMParser().parseFromString('<xml>start center end</xml>');
-    var root = dom.documentElement;
-    console.assert(root.firstChild.data == 'start center end');
-    console.assert(root.firstChild.nextSibling == null);
-  },
-  'cdata': function() {
-    var dom = new DOMParser().parseFromString('<xml>start <![CDATA[<encoded>]]> end<![CDATA[[[[[[[[[]]]]]]]]]]></xml>');
-    var root = dom.documentElement;
-    console.assert(root.firstChild.data == 'start ');
-    console.assert(root.firstChild.nextSibling.data == '<encoded>');
-    console.assert(root.firstChild.nextSibling.nextSibling.nextSibling.data == '[[[[[[[[]]]]]]]]');
-  },
-  'cdata empty': function() {
-    var dom = new DOMParser().parseFromString('<xml><![CDATA[]]>start <![CDATA[]]> end</xml>');
-    var root = dom.documentElement;
-    console.assert(root.textContent == 'start  end');
-  },
-  'comment': function() {
-    var dom = new DOMParser().parseFromString('<xml><!-- comment&>< --></xml>');
-    var root = dom.documentElement;
-    console.assert(root.firstChild.nodeValue == ' comment&>< ');
-  },
-  'cdata comment': function() {
-    var dom = new DOMParser().parseFromString('<xml>start <![CDATA[<encoded>]]> <!-- comment -->end</xml>');
-    var root = dom.documentElement;
-    console.assert(root.firstChild.nodeValue == 'start ');
-    console.assert(root.firstChild.nextSibling.nodeValue == '<encoded>');
-    console.assert(root.firstChild.nextSibling.nextSibling.nextSibling.nodeValue == ' comment ');
-    console.assert(root.firstChild.nextSibling.nextSibling.nextSibling.nextSibling.nodeValue == 'end');
-  },
-  'append node': function() {
-    var dom = new DOMParser().parseFromString('<xml/>');
-    var child = dom.createElement("child");
-    console.assert(child == dom.documentElement.appendChild(child));
-    console.assert(child == dom.documentElement.firstChild);
+
+var xmldom = require('../');
+var assets = require('./assets/node.json');
+
+
+var parseFromString = function(xml, contentType) {
+  return new xmldom.DOMParser().parseFromString(xml, contentType);
+};
+
+lab.suite('XML Node Parser', function() {
+  lab.test('element', function(done) {
+    var dom = parseFromString(assets.element);
+
+    assert.equal(dom.childNodes.length, 1);
+    assert.equal(dom.documentElement.childNodes.length, 1);
+    assert.equal(dom.documentElement.tagName, 'xml');
+    assert.equal(dom.documentElement.firstChild.tagName, 'child');
+
+    done();
+  });
+
+  lab.test('text', function(done) {
+    var dom = parseFromString(assets.text);
+
+    assert.equal(dom.documentElement.firstChild.data, 'start center end');
+    assert.equal(dom.documentElement.firstChild.nextSibling, null);
+
+    done();
+  });
+
+  lab.test('cdata', function(done) {
+    var dom = parseFromString(assets.cdata);
+    var firstChild = dom.documentElement.firstChild;
+    var nextSibling = firstChild.nextSibling.nextSibling.nextSibling;
+
+    assert.equal(firstChild.data, 'start ');
+    assert.equal(firstChild.nextSibling.data, '<encoded>');
+    assert.equal(nextSibling.data, '[[[[[[[[]]]]]]]]');
+
+    done();
+  });
+
+  lab.test('cdata empty', function(done) {
+    var dom = parseFromString(assets['cdata empty']);
+
+    assert.equal(dom.documentElement.textContent, 'start  end');
+
+    done();
+  });
+
+  lab.test('comment', function(done) {
+    var dom = parseFromString(assets.comment);
+
+    assert.equal(dom.documentElement.firstChild.nodeValue, ' comment&>< ');
+
+    done();
+  });
+
+  lab.test('cdata comment', function(done) {
+    var dom = parseFromString(assets['cdata comment']);
+
+    var firstChild = dom.documentElement.firstChild;
+    var nextSibling = firstChild.nextSibling.nextSibling.nextSibling;
+
+    assert.equal(firstChild.nodeValue, 'start ');
+    assert.equal(firstChild.nextSibling.nodeValue, '<encoded>');
+    assert.equal(nextSibling.nodeValue, ' comment ');
+    assert.equal(nextSibling.nextSibling.nodeValue, 'end');
+
+    done();
+  });
+
+  lab.test('append node', function(done) {
+    var dom = parseFromString(assets['append node']);
+    var child = dom.createElement('child');
     var fragment = new dom.createDocumentFragment();
-    console.assert(child == fragment.appendChild(child));
-  },
-  'insert node': function() {
-    var dom = new DOMParser().parseFromString('<xml><child/></xml>');
-    var node = dom.createElement("sibling");
+
+    assert.equal(dom.documentElement.appendChild(child), child);
+    assert.equal(dom.documentElement.firstChild, child);
+    assert.equal(fragment.appendChild(child), child);
+
+    done();
+  });
+
+  lab.test('insert node', function(done) {
+    var dom = parseFromString(assets['insert node']);
+    var node = dom.createElement('sibling');
     var child = dom.documentElement.firstChild;
+
     child.parentNode.insertBefore(node, child);
-    console.assert(node == child.previousSibling);
-    console.assert(node.nextSibling == child);
-    console.assert(node.parentNode == child.parentNode);
-  },
-  'insert fragment': function() {
-    var dom = new DOMParser().parseFromString('<xml><child/></xml>');
+
+    assert.equal(child.previousSibling, node);
+    assert.equal(node.nextSibling, child);
+    assert.equal(node.parentNode, child.parentNode);
+
+    done();
+  });
+
+  lab.test('insert fragment', function(done) {
+    var dom = parseFromString(assets['insert fragment']);
     var fragment = dom.createDocumentFragment();
-    assert(fragment.nodeType === 11);
-    var first = fragment.appendChild(dom.createElement("first"));
-    var last = fragment.appendChild(dom.createElement("last"));
-    console.assert(fragment.firstChild == first);
-    console.assert(fragment.lastChild == last);
-    console.assert(last.previousSibling == first);
-    console.assert(first.nextSibling == last);
+
+    var first = fragment.appendChild(dom.createElement('first'));
+    var last = fragment.appendChild(dom.createElement('last'));
+
+    assert.equal(fragment.nodeType, 11);
+
+    assert.equal(fragment.firstChild, first);
+    assert.equal(fragment.lastChild, last);
+    assert.equal(last.previousSibling, first);
+    assert.equal(first.nextSibling, last);
+
     var child = dom.documentElement.firstChild;
     child.parentNode.insertBefore(fragment, child);
-    console.assert(last.previousSibling == first);
-    console.assert(first.nextSibling == last);
-    console.assert(child.parentNode.firstChild == first);
-    console.assert(last == child.previousSibling);
-    console.assert(last.nextSibling == child);
-    console.assert(first.parentNode == child.parentNode);
-    console.assert(last.parentNode == child.parentNode);
-  }
-}).addBatch({
-  "instruction": function() {
-    var source = '<?xml version="1.0"?><root><child>&amp;<!-- &amp; --></child></root>';
-    var doc = new DOMParser().parseFromString(source, "text/xml");
-    var source2 = new XMLSerializer().serializeToString(doc);
-    console.assert(source == source2, source2);
-  },
-  'public id && sysid': function() {
-    var error = []
-    var parser = new DOMParser({
-      locator: {},
-      errorHandler: function(msg) {
-        error.push(msg);
-      }
-    });
-    var doc = parser.parseFromString('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html/>', 'text/html');
-    console.log(doc + '')
 
-  }
-}).run(); // Run it
-//var ELEMENT_NODE                = NodeType.ELEMENT_NODE                = 1;
-//var ATTRIBUTE_NODE              = NodeType.ATTRIBUTE_NODE              = 2;
-//var TEXT_NODE                   = NodeType.TEXT_NODE                   = 3;
-//var CDATA_SECTION_NODE          = NodeType.CDATA_SECTION_NODE          = 4;
-//var ENTITY_REFERENCE_NODE       = NodeType.ENTITY_REFERENCE_NODE       = 5;
-//var ENTITY_NODE                 = NodeType.ENTITY_NODE                 = 6;
-//var PROCESSING_INSTRUCTION_NODE = NodeType.PROCESSING_INSTRUCTION_NODE = 7;
-//var COMMENT_NODE                = NodeType.COMMENT_NODE                = 8;
-//var DOCUMENT_NODE               = NodeType.DOCUMENT_NODE               = 9;
-//var DOCUMENT_TYPE_NODE          = NodeType.DOCUMENT_TYPE_NODE          = 10;
-//var DOCUMENT_FRAGMENT_NODE      = NodeType.DOCUMENT_FRAGMENT_NODE      = 11;
-//var NOTATION_NODE               = NodeType.NOTATION_NODE               = 12;
+    assert.equal(last.previousSibling, first);
+    assert.equal(first.nextSibling, last);
+    assert.equal(child.parentNode.firstChild, first);
+    assert.equal(child.previousSibling, last);
+    assert.equal(last.nextSibling, child);
+    assert.equal(first.parentNode, child.parentNode);
+    assert.equal(last.parentNode, child.parentNode);
+
+    done();
+  });
+
+  lab.test('instruction', function(done) {
+    var doc = parseFromString(assets.instruction, 'text/xml');
+    var source = new xmldom.XMLSerializer().serializeToString(doc);
+
+    assert.equal(assets.instruction, source);
+
+    done();
+  });
+});
+
+exports.lab = lab;

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "main": "./src/dom-parser.js",
-  "description": "A W3C Standard XML DOM(Level2 CORE) implementation and parser(DOMParser/XMLSerializer).",
+  "description": "A W3C Standard XML DOM(Level2 CORE) implementation and parser(DOMParser/XMLSerializer)",
   "keywords": [
     "w3c",
     "dom",
@@ -18,24 +18,38 @@
     "url": "git://github.com/ramitos/xmldom.git"
   },
   "author": "Sérgio Ramos <mail@sergioramos.me>",
-  "contributors": [{
-    "name": "Antti Piril‰",
-    "email": "antti.pirila@rekursio.fi"
-  }, {
-    "name": "jindw (initial contributor)",
-    "email": "jindw@xidea.org",
-    "url": "http://www.xidea.org"
-  }, {
-    "name": "Yaron Naveh",
-    "email": "yaronn01@gmail.com",
-    "web": "http://webservices20.blogspot.com/"
-  }, {
-    "name": "Harutyun Amirjanyan",
-    "email": "amirjanyan@gmail.com",
-    "web": "https://github.com/nightwing"
-  }, {
-    "name": "Alan Gutierrez",
-    "email": "alan@prettyrobots.com",
-    "web": "http://www.prettyrobots.com/"
-  }]
+  "scripts": {
+    "test": "NODE_ENV=debug istanbul cover -- lab -l test/*.js"
+  },
+  "contributors": [
+    {
+      "name": "Antti Piril‰",
+      "email": "antti.pirila@rekursio.fi"
+    },
+    {
+      "name": "jindw (initial contributor)",
+      "email": "jindw@xidea.org",
+      "url": "http://www.xidea.org"
+    },
+    {
+      "name": "Yaron Naveh",
+      "email": "yaronn01@gmail.com",
+      "web": "http://webservices20.blogspot.com/"
+    },
+    {
+      "name": "Harutyun Amirjanyan",
+      "email": "amirjanyan@gmail.com",
+      "web": "https://github.com/nightwing"
+    },
+    {
+      "name": "Alan Gutierrez",
+      "email": "alan@prettyrobots.com",
+      "web": "http://www.prettyrobots.com/"
+    }
+  ],
+  "devDependencies": {
+    "code": "^2.0.1",
+    "lab": "^7.3.0",
+    "nyc": "^3.2.2"
+  }
 }
