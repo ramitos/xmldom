@@ -1,0 +1,35 @@
+{
+  "element": "<xml><child/></xml>",
+  "text": "<xml>start center end</xml>",
+  "cdata": "<xml>start <![CDATA[<encoded>]]> end<![CDATA[[[[[[[[[]]]]]]]]]]></xml>",
+  "cdata empty": "<xml><![CDATA[]]>start <![CDATA[]]> end</xml>",
+  "comment": "<xml><!-- comment&>< --></xml>",
+  "cdata comment": "<xml>start <![CDATA[<encoded>]]> <!-- comment -->end</xml>",
+  "append node": "<xml/>",
+  "insert node": "<xml><child/></xml>",
+  "insert fragment": "<xml><child/></xml>",
+  "instruction": "<?xml version=\"1.0\"?><root><child>&amp;<!-- &amp; --></child></root>",
+  "noAttribute": [
+    "<xml ></xml>",
+    "<xml></xml>",
+    "<xml />",
+    "<xml/>"
+  ],
+  "simpleAttribute": [[
+    "<xml a=\"1\" b=\"2\"></xml>",
+    "<xml a=\"1\" b=\"2\" ></xml>",
+    "<xml a=\"1\" b=\"2\"/>",
+    "<xml a=\"1\" b=\"2\" />"
+  ], [
+    "<xml  a=\"1\" b=''/>",
+    "<xml  a=\"1\" b='' />",
+    "<xml a=\"1\" b=''></xml>",
+    "<xml a=\"1\" b='' ></xml>"
+  ]],
+  "nsAttribute": [
+    "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\"></xml>",
+    "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\" ></xml>",
+    "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\"/>",
+    "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\" />"
+  ]
+}

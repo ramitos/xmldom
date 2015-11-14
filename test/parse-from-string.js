@@ -1,15 +1,16 @@
 var lab = require('lab').script();
+var toJSON = require('document-to-json');
 var assert = require('assert');
 
 var xmldom = require('../');
-var assets = require('./assets/node.json');
+var assets = require('./assets/parse-from-string.json');
 
 
 var parseFromString = function(xml, contentType) {
   return new xmldom.DOMParser().parseFromString(xml, contentType);
 };
 
-lab.suite('XML Node Parser', function() {
+lab.suite('parseFromString', function() {
   lab.test('element', function(done) {
     var dom = parseFromString(assets.element);
 
@@ -131,6 +132,60 @@ lab.suite('XML Node Parser', function() {
     var source = new xmldom.XMLSerializer().serializeToString(doc);
 
     assert.equal(assets.instruction, source);
+
+    done();
+  });
+
+  lab.test('noAttribute', function(done) {
+    assets.noAttribute.forEach(function(xml) {
+      assert.deepEqual({
+        name: 'xml',
+        childs: [],
+        attrs: {}
+      }, toJSON(parseFromString(xml, 'text/xml')));
+    });
+
+    done();
+  });
+
+  lab.test('simpleAttribute', function(done) {
+    assets.simpleAttribute[0].forEach(function(xml) {
+      assert.deepEqual({
+        name: 'xml',
+        childs: [],
+        attrs: {
+          a: '1',
+          b: '2'
+        }
+      }, toJSON(parseFromString(xml, 'text/xml')));
+    });
+
+    assets.simpleAttribute[1].forEach(function(xml) {
+      assert.deepEqual({
+        name: 'xml',
+        childs: [],
+        attrs: {
+          a: '1',
+          b: ''
+        }
+      }, toJSON(parseFromString(xml, 'text/xml')));
+    });
+
+    done();
+  });
+
+  lab.test('nsAttribute', function(done) {
+    assets.nsAttribute.forEach(function(xml) {
+      assert.deepEqual({
+        name: 'xml',
+        childs: [],
+        attrs: {
+          xmlns: '1',
+          'xmlns:a': '2',
+          'a:test': '3'
+        }
+      }, toJSON(parseFromString(xml, 'text/xml')));
+    });
 
     done();
   });

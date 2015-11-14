@@ -48,7 +48,7 @@
     }
   ],
   "devDependencies": {
-    "code": "^2.0.1",
+    "document-to-json": "^1.0.2",
     "lab": "^7.3.0",
     "nyc": "^3.2.2"
   }
