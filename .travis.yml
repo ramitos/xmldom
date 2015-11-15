@@ -5,5 +5,8 @@ node_js:
     - 4
     - 0.12
     - 0.10
+env:
+    - CODECLIMATE_REPO_TOKEN=7186664254223be870e23e199add1c8926c4d63c0f5011d86b7bd67a23f26aef
 script:
     - npm test
+    - codeclimate-test-reporter < coverage/lcov.info

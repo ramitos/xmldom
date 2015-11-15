@@ -48,7 +48,8 @@
     }
   ],
   "devDependencies": {
-    "document-to-json": "^1.0.2",
+    "codeclimate-test-reporter": "^0.1.1",
+    "document-to-json": "^2.0.0",
     "lab": "^7.3.0",
     "nyc": "^3.2.2"
   }
