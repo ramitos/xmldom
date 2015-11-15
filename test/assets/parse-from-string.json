@@ -31,5 +31,9 @@
     "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\" ></xml>",
     "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\"/>",
     "<xml xmlns=\"1\" xmlns:a=\"2\" a:test=\"3\" />"
-  ]
+  ],
+  "errorHandle": {
+    "simple": "<html><body title=\"1<2\"></body></html>",
+    "only function two args": "<html disabled><1 1=\"2\"/></body></html>"
+  }
 }

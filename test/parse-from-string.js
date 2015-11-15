@@ -6,9 +6,17 @@ var xmldom = require('../');
 var assets = require('./assets/parse-from-string.json');
 
 
-var parseFromString = function(xml, contentType) {
-  return new xmldom.DOMParser().parseFromString(xml, contentType);
+var parseFromString = function(xml, contentType, opts) {
+  return new xmldom.DOMParser(opts).parseFromString(xml, contentType);
 };
+//
+// var _catch = function(fn) {
+//   return function(done) {
+//     try {
+//       fn(done);
+//     } catch(err) {}
+//   };
+// };
 
 lab.suite('parseFromString', function() {
   lab.test('element', function(done) {
@@ -138,11 +146,11 @@ lab.suite('parseFromString', function() {
 
   lab.test('noAttribute', function(done) {
     assets.noAttribute.forEach(function(xml) {
-      assert.deepEqual({
+      assert.deepEqual(toJSON(parseFromString(xml, 'text/xml')), {
         name: 'xml',
         childs: [],
         attrs: {}
-      }, toJSON(parseFromString(xml, 'text/xml')));
+      });
     });
 
     done();
@@ -150,25 +158,25 @@ lab.suite('parseFromString', function() {
 
   lab.test('simpleAttribute', function(done) {
     assets.simpleAttribute[0].forEach(function(xml) {
-      assert.deepEqual({
+      assert.deepEqual(toJSON(parseFromString(xml, 'text/xml')), {
         name: 'xml',
         childs: [],
         attrs: {
           a: '1',
           b: '2'
         }
-      }, toJSON(parseFromString(xml, 'text/xml')));
+      });
     });
 
     assets.simpleAttribute[1].forEach(function(xml) {
-      assert.deepEqual({
+      assert.deepEqual(toJSON(parseFromString(xml, 'text/xml')), {
         name: 'xml',
         childs: [],
         attrs: {
           a: '1',
           b: ''
         }
-      }, toJSON(parseFromString(xml, 'text/xml')));
+      });
     });
 
     done();
@@ -176,7 +184,7 @@ lab.suite('parseFromString', function() {
 
   lab.test('nsAttribute', function(done) {
     assets.nsAttribute.forEach(function(xml) {
-      assert.deepEqual({
+      assert.deepEqual(toJSON(parseFromString(xml, 'text/xml')), {
         name: 'xml',
         childs: [],
         attrs: {
@@ -184,11 +192,127 @@ lab.suite('parseFromString', function() {
           'xmlns:a': '2',
           'a:test': '3'
         }
-      }, toJSON(parseFromString(xml, 'text/xml')));
+      });
     });
 
     done();
   });
+
+  lab.suite('errorHandle', function() {
+    lab.test('simple', function(done) {
+      var doc = parseFromString(assets.errorHandle.simple, 'text/html');
+
+      assert.deepEqual(toJSON(doc), {
+        name: 'html',
+        childs: [
+          {
+            name: 'body',
+            childs: [],
+            attrs: {
+              title: '1<2'
+            }
+          }
+        ],
+        attrs: {}
+      });
+
+      done();
+    });
+
+    lab.test('only function two args', function(done) {
+      var xml = assets.errorHandle['only function two args'];
+      var errors = [];
+
+      var doc = parseFromString(xml, 'text/html', {
+        errorHandler: function(key, msg) {
+          errors.push({
+            key: key,
+            msg: msg
+          });
+        }
+      });
+
+      console.log(errors);
+
+      done();
+    });
+  });
 });
 
 exports.lab = lab;
+
+// 'only function two args': function() {
+//   var error = {}
+//   var parser = new DOMParser({
+//     errorHandler: function(key, msg) {
+//       error[key] = msg
+//     }
+//   });
+//   try {
+//     var doc = parser.parseFromString('', 'text/xml');
+//     console.assert(error.warning != null, 'error.error:' + error.warning);
+//     console.assert(error.error != null, 'error.error:' + error.error);
+//     console.assert(error.fatalError != null, 'error.error:' + error.fatalError);
+//     //console.log(doc+'')
+//   } catch (e) {}
+// },
+// 'only function': function() {
+//   var error = []
+//   var parser = new DOMParser({
+//     errorHandler: function(msg) {
+//       error.push(msg)
+//     }
+//   });
+//   try {
+//     var doc = parser.parseFromString('<html disabled><1 1="2"/></body></html>', 'text/xml');
+//     error.map(function(e) {
+//       error[e.replace(/\:[\s\S]*/, '')] = e
+//     })
+//     console.assert(error.warning != null, 'error.error:' + error.warning);
+//     console.assert(error.error != null, 'error.error:' + error.error);
+//     console.assert(error.fatalError != null, 'error.error:' + error.fatalError);
+//     //console.log(doc+'')
+//   } catch (e) {}
+// },
+// 'only function': function() {
+//   var error = []
+//   var errorMap = []
+//   new DOMParser({
+//     errorHandler: function(msg) {
+//       error.push(msg)
+//     }
+//   }).parseFromString('<html><body title="1<2">test</body></html>', 'text/xml');
+//   'warn,warning,error,fatalError'.replace(/\w+/g, function(k) {
+//     var errorHandler = {};
+//     errorMap[k] = [];
+//     errorHandler[k] = function(msg) {
+//       errorMap[k].push(msg)
+//     }
+//     new DOMParser({
+//       errorHandler: errorHandler
+//     }).parseFromString('<html><body title="1<2">test</body></html>', 'text/xml');
+//   });
+//   for (var n in errorMap) {
+//     console.assert(error.length == errorMap[n].length)
+//   }
+// },
+// 'error function': function() {
+//   var error = []
+//   var parser = new DOMParser({
+//     locator: {},
+//     errorHandler: {
+//       error: function(msg) {
+//         error.push(msg);
+//         throw new Error(msg)
+//       }
+//     }
+//   });
+//   try {
+//     var doc = parser.parseFromString('<html><body title="1<2"><table>&lt;;test</body></body></html>', 'text/html');
+//   } catch (e) {
+//     console.log(e);
+//     console.assert(/\n@#\[line\:\d+,col\:\d+\]/.test(error.join(' ')), 'line,col must record:' + error)
+//     return;
+//   }
+//   console.assert(false, doc + ' should be null');
+// }
